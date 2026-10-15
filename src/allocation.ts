@@ -49,15 +49,31 @@ function suppliesNeeded(): number {
   return CREW_SIZE * RATION_PER_CREW_MEMBER;
 }
 
-function calculateShift(crewOnSupplies: number) {
+/** One shift's provisioning facts, shared by every view. No DOM, no canvas. */
+type ShiftReport = {
+  readonly crewOnSupplies: number;
+  readonly crewSize: number;
+  readonly production: number;
+  readonly consumption: number;
+  readonly balance: number;
+};
+
+function calculateShift(crewOnSupplies: number): ShiftReport {
   const production = suppliesProduced(crewOnSupplies);
   const consumption = suppliesNeeded();
-  return { production, consumption, balance: production - consumption };
+  return {
+    crewOnSupplies,
+    crewSize: CREW_SIZE,
+    production,
+    consumption,
+    balance: production - consumption,
+  };
 }
+
 // Canvas
-function drawCrewTiles(crewOnSupplies: number) {
-  for (let member = 0; member < CREW_SIZE; member++) {
-    const onSupplies = member < crewOnSupplies;
+function drawCrewTiles(report: ShiftReport) {
+  for (let member = 0; member < report.crewSize; member++) {
+    const onSupplies = member < report.crewOnSupplies;
     const tileX = LEFT_MARGIN + member * TILE_PITCH;
     ctx.fillStyle = onSupplies ? SUPPLY_GREEN : OTHER_DUTY_TILE;
     ctx.fillRect(tileX, TILE_TOP, TILE_SIZE, TILE_SIZE);
@@ -72,13 +88,14 @@ function drawCrewTiles(crewOnSupplies: number) {
   ctx.fillStyle = INK;
   ctx.font = LABEL_FONT;
   ctx.fillText(
-    `Producers: ${crewOnSupplies} / ${CREW_SIZE}`,
+    `Producers: ${report.crewOnSupplies} / ${report.crewSize}`,
     LEFT_MARGIN,
     CREW_SUMMARY_BASELINE,
   );
 }
 
-function drawSupplyBars(production: number, consumption: number) {
+function drawSupplyBars(report: ShiftReport) {
+  const { production, consumption } = report;
   ctx.font = LABEL_FONT;
 
   ctx.fillStyle = INK;
@@ -110,29 +127,27 @@ function drawSupplyBars(production: number, consumption: number) {
     BAR_HEIGHT,
   );
 }
+
 // Text readout
 function formatSigned(value: number): string {
   return `${value > 0 ? "+" : ""}${value}`;
 }
 
-function writeReadout(
-  crewOnSupplies: number,
-  production: number,
-  consumption: number,
-  balance: number,
-) {
+function writeReadout(report: ShiftReport) {
   readout.textContent =
-    `Assigned: ${crewOnSupplies}/${CREW_SIZE} · Production: ${production} · ` +
-    `Consumption: ${consumption} · Balance: ${formatSigned(balance)}`;
+    `Assigned: ${report.crewOnSupplies}/${report.crewSize} · ` +
+    `Production: ${report.production} · ` +
+    `Consumption: ${report.consumption} · ` +
+    `Balance: ${formatSigned(report.balance)}`;
 }
 
 // Shift update
 function renderShift() {
-  const { production, consumption, balance } = calculateShift(crewOnSupplies);
+  const report = calculateShift(crewOnSupplies);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawCrewTiles(crewOnSupplies);
-  drawSupplyBars(production, consumption);
-  writeReadout(crewOnSupplies, production, consumption, balance);
+  drawCrewTiles(report);
+  drawSupplyBars(report);
+  writeReadout(report);
 }
 
 function assignCrewToSupplies(count: number) {
