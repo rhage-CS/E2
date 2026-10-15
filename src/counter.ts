@@ -22,6 +22,10 @@ let charge = 0;
 let panel: HTMLParagraphElement | null = null;
 let panelUpdates = 0;
 
+/** Announces completed shield changes. */
+const shieldEvents = new EventTarget();
+const SHIELD_CHANGED = "shield-changed";
+
 /** Prepared without DOM or canvas access. */
 function snapshotShield(): ShieldSnapshot {
   return {
@@ -59,10 +63,14 @@ function setCharge(next: number) {
   const bounded = Math.max(0, Math.min(SHIELD_CAPACITY, next));
   if (bounded === charge) return;
   charge = bounded;
-  const shield = snapshotShield();
-  drawMeter(shield);
-  if (panel) updateStats(shield);
+  shieldEvents.dispatchEvent(new Event(SHIELD_CHANGED));
+  if (panel) updateStats(snapshotShield());
 }
+
+// Permanent HUD: wired outside the charge-changing code.
+shieldEvents.addEventListener(SHIELD_CHANGED, () => {
+  drawMeter(snapshotShield());
+});
 
 document.querySelector<HTMLButtonElement>("#counter-less")!.onclick = () => {
   setCharge(charge - 1);
@@ -84,3 +92,4 @@ document.querySelector<HTMLButtonElement>("#counter-close")!.onclick = () => {
   panel.remove();
   panel = null;
 };
+drawMeter(snapshotShield());
