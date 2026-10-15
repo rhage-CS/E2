@@ -25,8 +25,8 @@ const TILE_NUMBER_INSET = 13;
 const TILE_NUMBER_BASELINE = 40;
 
 const CREW_SUMMARY_BASELINE = 76;
-const PRODUCTION_LABEL_BASELINE = 102;
-const CONSUMPTION_LABEL_BASELINE = 154;
+const FIRST_ROW_LABEL_BASELINE = 102;
+const ROW_SPACING = 52;
 const LABEL_TO_BAR_GAP = 8;
 const BAR_HEIGHT = 20;
 const BAR_PX_PER_SUPPLY = 14;
@@ -94,38 +94,37 @@ function drawCrewTiles(report: ShiftReport) {
   );
 }
 
+/** Which calculated amount a chart row shows. The value itself comes from the report. */
+type SupplyMeasure = "production" | "consumption";
+
+/** How one row of the supply chart is presented. */
+type SupplyRow = {
+  readonly label: string;
+  readonly color: string;
+  readonly measure: SupplyMeasure;
+};
+
+/** Top-to-bottom order of the chart; each row's position is derived from it. */
+const SUPPLY_ROWS: readonly SupplyRow[] = [
+  { label: "Production", color: SUPPLY_GREEN, measure: "production" },
+  { label: "Consumption", color: NEED_RUST, measure: "consumption" },
+];
+
 function drawSupplyBars(report: ShiftReport) {
-  const { production, consumption } = report;
   ctx.font = LABEL_FONT;
-
-  ctx.fillStyle = INK;
-  ctx.fillText(
-    `Production: ${production}`,
-    LEFT_MARGIN,
-    PRODUCTION_LABEL_BASELINE,
-  );
-
-  ctx.fillStyle = SUPPLY_GREEN;
-  ctx.fillRect(
-    LEFT_MARGIN,
-    PRODUCTION_LABEL_BASELINE + LABEL_TO_BAR_GAP,
-    production * BAR_PX_PER_SUPPLY,
-    BAR_HEIGHT,
-  );
-
-  ctx.fillStyle = INK;
-  ctx.fillText(
-    `Consumption: ${consumption}`,
-    LEFT_MARGIN,
-    CONSUMPTION_LABEL_BASELINE,
-  );
-  ctx.fillStyle = NEED_RUST;
-  ctx.fillRect(
-    LEFT_MARGIN,
-    CONSUMPTION_LABEL_BASELINE + LABEL_TO_BAR_GAP,
-    consumption * BAR_PX_PER_SUPPLY,
-    BAR_HEIGHT,
-  );
+  SUPPLY_ROWS.forEach((row, index) => {
+    const amount = report[row.measure];
+    const labelBaseline = FIRST_ROW_LABEL_BASELINE + index * ROW_SPACING;
+    ctx.fillStyle = INK;
+    ctx.fillText(`${row.label}: ${amount}`, LEFT_MARGIN, labelBaseline);
+    ctx.fillStyle = row.color;
+    ctx.fillRect(
+      LEFT_MARGIN,
+      labelBaseline + LABEL_TO_BAR_GAP,
+      amount * BAR_PX_PER_SUPPLY,
+      BAR_HEIGHT,
+    );
+  });
 }
 
 // Text readout
