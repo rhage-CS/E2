@@ -19,8 +19,7 @@ type ShieldSnapshot = {
 };
 
 let charge = 0;
-let panel: HTMLParagraphElement | null = null;
-let panelUpdates = 0;
+let inspectorDeliveries = 0;
 
 /** Announces completed shield changes. */
 const shieldEvents = new EventTarget();
@@ -47,24 +46,11 @@ function drawMeter(shield: ShieldSnapshot) {
   readout.textContent = `Shield charge: ${shield.charge} / ${shield.capacity}`;
 }
 
-function updateStats(shield: ShieldSnapshot) {
-  panelUpdates++;
-  diagnostic.textContent = `Inspector deliveries: ${panelUpdates}`;
-  renderStats(shield);
-}
-
-function renderStats(shield: ShieldSnapshot) {
-  if (!panel) return;
-  panel.textContent =
-    `Shield charge: ${shield.charge} · Missing charge: ${shield.missing}`;
-}
-
 function setCharge(next: number) {
   const bounded = Math.max(0, Math.min(SHIELD_CAPACITY, next));
   if (bounded === charge) return;
   charge = bounded;
   shieldEvents.dispatchEvent(new Event(SHIELD_CHANGED));
-  if (panel) updateStats(snapshotShield());
 }
 
 // Permanent HUD: wired outside the charge-changing code.
@@ -81,15 +67,45 @@ document.querySelector<HTMLButtonElement>("#counter-more")!.onclick = () => {
 document.querySelector<HTMLButtonElement>("#counter-reset")!.onclick = () => {
   setCharge(0);
 };
-document.querySelector<HTMLButtonElement>("#counter-open")!.onclick = () => {
-  if (panel) return;
-  panel = document.createElement("p");
+// Detachable inspector
+
+/** An open inspector: its panel and the listener it subscribed with. */
+type Inspector = {
+  readonly panel: HTMLParagraphElement;
+  readonly onShieldChanged: () => void;
+};
+
+let inspector: Inspector | null = null;
+
+function renderInspector(panel: HTMLParagraphElement, shield: ShieldSnapshot) {
+  panel.textContent =
+    `Shield charge: ${shield.charge} · Missing charge: ${shield.missing}`;
+}
+
+function openInspector() {
+  if (inspector) return;
+  const panel = document.createElement("p");
   host.append(panel);
-  renderStats(snapshotShield());
-};
-document.querySelector<HTMLButtonElement>("#counter-close")!.onclick = () => {
-  if (!panel) return;
-  panel.remove();
-  panel = null;
-};
+  renderInspector(panel, snapshotShield()); // initial render: not a delivery
+  const onShieldChanged = () => {
+    inspectorDeliveries++;
+    diagnostic.textContent = `Inspector deliveries: ${inspectorDeliveries}`;
+    renderInspector(panel, snapshotShield());
+  };
+  shieldEvents.addEventListener(SHIELD_CHANGED, onShieldChanged);
+  inspector = { panel, onShieldChanged };
+}
+
+function closeInspector() {
+  if (!inspector) return;
+  shieldEvents.removeEventListener(SHIELD_CHANGED, inspector.onShieldChanged);
+  inspector.panel.remove();
+  inspector = null;
+}
+
+document.querySelector<HTMLButtonElement>("#counter-open")!.onclick =
+  openInspector;
+document.querySelector<HTMLButtonElement>("#counter-close")!.onclick =
+  closeInspector;
+
 drawMeter(snapshotShield());
