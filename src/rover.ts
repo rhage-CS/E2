@@ -76,19 +76,62 @@ const rightCommand: Command = {
 };
 
 /** The invoker: runs whatever command it is given, then redraws. */
-function invoke(command: Command) {
-  command.execute();
+
+const pendingList = document.querySelector<HTMLOListElement>("#rover-pending")!;
+const queueStatus = document.querySelector<HTMLParagraphElement>(
+  "#rover-queue-status",
+)!;
+const runButton = document.querySelector<HTMLButtonElement>("#rover-run")!;
+const clearButton = document.querySelector<HTMLButtonElement>("#rover-clear")!;
+
+const pendingCommands: Command[] = [];
+
+function renderQueue() {
+  pendingList.replaceChildren(
+    ...pendingCommands.map((command) => {
+      const item = document.createElement("li");
+      item.textContent = command.label;
+      return item;
+    }),
+  );
+  queueStatus.textContent = pendingCommands.length === 0
+    ? "Empty"
+    : `${pendingCommands.length} pending`;
+}
+
+function enqueue(command: Command) {
+  pendingCommands.push(command);
+  renderQueue();
+}
+
+/** The invoker: executes the plan in order, oldest first, then empties it. */
+function runQueue() {
+  while (pendingCommands.length > 0) {
+    pendingCommands.shift()!.execute();
+  }
   drawRover();
+  renderQueue();
+}
+
+function clearQueue() {
+  pendingCommands.length = 0;
+  renderQueue();
 }
 
 document.querySelector<HTMLButtonElement>("#rover-forward")!.onclick = () =>
-  invoke(forwardCommand);
+  enqueue(forwardCommand);
 document.querySelector<HTMLButtonElement>("#rover-right")!.onclick = () =>
-  invoke(rightCommand);
+  enqueue(rightCommand);
+runButton.onclick = runQueue;
+clearButton.onclick = clearQueue;
+runButton.disabled = false;
+clearButton.disabled = false;
 document.querySelector<HTMLButtonElement>("#rover-reset")!.onclick = () => {
   x = 2;
   y = 2;
   direction = 0;
+  clearQueue();
   drawRover();
 };
 drawRover();
+renderQueue();
