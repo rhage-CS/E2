@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E2 Workshop stations</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Workshop stations</h1>
+      <p>E2 · Patterns in practice</p>
+    </header>
+    <main>
+      <section aria-labelledby="allocation-title">
+        <h2 id="allocation-title">A · Kestrel is not a colony</h2>
+        <p>Reclaim the habitat · Six crew need 6 supplies, whatever their role. Each supply producer makes 3.</p>
+        <canvas id="allocation-canvas" width="300" height="200" role="img"
+          aria-label="Crew assignment and supply production versus consumption"></canvas>
+        <p id="allocation-readout" aria-live="polite"></p>
+        <div class="controls">
+          <button id="allocation-less">− Producer</button>
+          <button id="allocation-more">+ Producer</button>
+          <button id="allocation-reset">Reset allocation</button>
+        </div>
+      </section>
+      <section aria-labelledby="rover-title">
+        <h2 id="rover-title">B · Beyond the ridge</h2>
+        <p>Alien-moon exploration · Forward one cell or turn right. Map edges stop movement.</p>
+        <canvas id="rover-canvas" width="300" height="300" role="img"
+          aria-label="Rover on a five by five grid"></canvas>
+        <p id="rover-readout" aria-live="polite"></p>
+        <div class="controls">
+          <button id="rover-forward">Forward</button>
+          <button id="rover-right">Right</button>
+          <button id="rover-reset">Reset rover</button>
+        </div>
+        <h3>Pending commands</h3>
+        <ol id="rover-pending" aria-label="Pending commands"></ol>
+        <p id="rover-queue-status">Empty · queue not implemented</p>
+        <div class="controls">
+          <button id="rover-run" disabled>Run</button>
+          <button id="rover-clear" disabled>Clear</button>
+        </div>
+      </section>
+      <section aria-labelledby="counter-title">
+        <h2 id="counter-title">C · Salvage pilot</h2>
+        <p>Action roguelite · Shield charge: 0–10. Optional combat inspector.</p>
+        <canvas id="counter-canvas" width="300" height="120" role="img"
+          aria-label="Shield charge meter"></canvas>
+        <p id="counter-readout" aria-live="polite"></p>
+        <div class="controls">
+          <button id="counter-less">Hit (−1)</button>
+          <button id="counter-more">Recharge (+1)</button>
+          <button id="counter-reset">Reset shield</button>
+        </div>
+        <div class="controls">
+          <button id="counter-open">Open inspector</button>
+          <button id="counter-close">Close inspector</button>
+        </div>
+        <div id="counter-panel-host"></div>
+        <p id="counter-diagnostic"
+          aria-live="polite">Inspector deliveries: 0</p>
+      </section>
+    </main>
+    <script type="module" src="/src/allocation.ts"></script>
+    <script type="module" src="/src/rover.ts"></script>
+    <script type="module" src="/src/counter.ts"></script>
+  </body>
+</html>

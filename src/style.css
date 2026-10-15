@@ -1,0 +1,78 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #233e43;
+  background: #f4f1e8;
+  line-height: 1.5;
+}
+body {
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 24px;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0 0 12px;
+}
+header {
+  margin-bottom: 24px;
+}
+main {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 20px;
+  align-items: start;
+}
+section {
+  background: #fffdf7;
+  border: 1px solid #afbeb9;
+  border-radius: 8px;
+  padding: 16px;
+}
+h2 {
+  font-size: 1.25rem;
+}
+h3 {
+  font-size: 1rem;
+}
+canvas {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin: 12px auto;
+  background: #edf1e9;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: #edf1e9;
+  border: 1px solid #718881;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #a44d23;
+  outline-offset: 2px;
+}
+#counter-panel-host:not(:empty) {
+  border-left: 4px solid #27766b;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+#counter-diagnostic {
+  font-variant-numeric: tabular-nums;
+}
